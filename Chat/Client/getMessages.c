@@ -19,6 +19,6 @@ void getMyMessages(int sock){
     if ((bytesRcvd = recv(sock, receivedBuffer, RCVBUFSIZE, 0)) <= 0)
         DieWithError("recv() failed or connection closed prematurely");
     receivedBuffer[bytesRcvd] = '\0'; /* Terminate the string! */
-    printf("%s\n" ,receivedBuffer); /* Print the buffer */
+    printf("%s" ,receivedBuffer); /* Print the message, which ends with '/n'*/
 
 }

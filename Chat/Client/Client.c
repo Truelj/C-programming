@@ -9,8 +9,8 @@
 #define RCVBUFSIZE 50 /* Size of receive buffer */
 #define IP_LENGTH 15 /* Maximum length of IP address */
 #define MAXPENDING 5 /* Maximum outstanding connection requests */
-#define OPTIONSIZE 1
-#define USERNAME_LENGTH 20
+#define OPTIONSIZE 1 
+#define USERNAME_LENGTH 20 /* Maximum length of user's name */
 
 void connectToServer();
 void disconnectServer();
@@ -21,7 +21,7 @@ void getMyMessages(int sock);
 void initiateChat();
 void chatWithFriend(int clntSock, char *friend_name, char *user);
 void connectToFriend();
-void chat(int sock, char *user);
+void chat(int sock, char *friend_name, char *user);
 void DieWithError(char *errorMessage); /* Error handling function */
 
 int sock; /* Socket descriptor */
@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
 			case 2: sendMessage(sock); break;
 			case 3: getMyMessages(sock); break;
 			case 4: initiateChat(); break;
-			case 5: connectToFriend();chat(sock, user); break;
+			case 5: connectToFriend(); break;
 			default: break;
 
 		}
@@ -64,6 +64,7 @@ void connectToFriend(){
 	char optionBuffer[OPTIONSIZE]; 
     int bytesRcvd;
     char receivedBuffer[RCVBUFSIZE + 1];
+    char friend_name[USERNAME_LENGTH];
 /*send the command option to the server*/
     optionBuffer[0] = '5';
     if (send(sock, optionBuffer, OPTIONSIZE, 0) != OPTIONSIZE)
@@ -81,11 +82,11 @@ void connectToFriend(){
 	scanf("%s", servIP);
 	printf("Please enter your friend's port number: ");
 	scanf("%hu", &serverPort);
+	fgetc(stdin);/* Catch '\n' */
 
 /* Create a reliable, stream socket using TCP */
     if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
     DieWithError(" socket () failed") ;
-
 
 /* Construct the server address structure */
     memset(&serverAddr, 0, sizeof(serverAddr)); /* Zero out structure */
@@ -99,6 +100,15 @@ void connectToFriend(){
         DieWithError(" connect () failed");
 
  	printf("Connected!\n");
+/* Send name to friend */
+	if (send(sock, user, strlen(user), 0) != strlen(user))
+        DieWithError("send() sent a different number of bytes than expected");
+/* Receive the friend's name */
+    if ((bytesRcvd = recv(sock, friend_name, USERNAME_LENGTH, 0)) <= 0)
+        DieWithError("recv() failed or connection closed prematurely");
+/* Chat with friend */
+    chat(sock, friend_name, user);
+    
 }
 
 void connectToServer(){
@@ -156,6 +166,7 @@ void initiateChat(){
 	disconnectServer();
 	printf("please enter the port number you want to listen on : ");
 	scanf("%hu", &servPort);
+	fgetc(stdin); /* capture '/n' */
 
 
 /* Create socket for incoming connections */
@@ -181,12 +192,16 @@ void initiateChat(){
 /* Wait for a client to connect */
     if ((clntSock = accept(servSock, (struct sockaddr *) &clntAddr, &clntLen)) < 0)
         DieWithError("accept() failed");
-/* clntSock is connected to a client! */
-/* Receive the sender's name */
+/* clntSock is connected to the friend */
+/* Receive the friend's name */
     if ((bytesRcvd = recv(clntSock, friend_name, USERNAME_LENGTH, 0)) <= 0)
         DieWithError("recv() failed or connection closed prematurely");
    	friend_name[bytesRcvd] = '\0'; /* Terminate the string! */
     printf("%s is connected\n", friend_name);
+    /* Send name to friend */
+	if (send(clntSock, user, strlen(user), 0) != strlen(user))
+        DieWithError("send() sent a different number of bytes than expected");
+    
     chatWithFriend(clntSock, friend_name, user);
     
 

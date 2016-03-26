@@ -27,6 +27,7 @@ void sendMessage(int sock){
 
 /* Send the username of receiver to server */
     scanf("%s", userName);
+    fgetc(stdin); /* Capture '/n' */
     if (send(sock, userName, strlen(userName), 0) != strlen(userName))
         DieWithError("send() sent a different number of bytes than expected");
 
@@ -37,7 +38,7 @@ void sendMessage(int sock){
     printf("%s" ,receivedBuffer); /* Print the buffer */
 
 /* Send the message to server */
-    scanf("%s", message);
+    fgets(message, sizeof(message), stdin); /* Get user's message */
     if (send(sock, message, strlen(message), 0) != strlen(message))
         DieWithError("send() sent a different number of bytes than expected");
 /* Receive up to the buffer size bytes from the sender */

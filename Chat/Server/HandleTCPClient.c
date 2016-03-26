@@ -54,10 +54,12 @@ void HandleTCPClient(int clntSocket){
 
 void returnMessage(int clntSocket){
     char message[RCVBUFSIZE];
+    char sendBuffer[RCVBUFSIZE];
     strcpy(message, usrlist[currentUserId].message);
     /* Send user message */
     if(send(clntSocket, message, strlen(message), 0) != strlen(message))
         DieWithError("send() failed");
+    printf("Send back %s's message!\n", usrlist[currentUserId].name);
 }
 
 void disconnect(int clntSocket){
@@ -112,7 +114,7 @@ void recordUserMessage(int clntSocket){
         DieWithError("send() failed");
     /*printf("successfully sent message three\n");*/
     printf("A message to %s \n", usrlist[i].name);
-    printf("%s\n", usrlist[i].message);
+    printf("%s", usrlist[i].message);
 }
 
 void returnUserList(int clntSocket){
