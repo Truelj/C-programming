@@ -38,6 +38,8 @@ int main()
     /* Mark the socket so it will listen for incoming connections */
     if (listen(servSock, MAXPENDING) < 0)
         DieWithError("listen() failed") ;
+    printf("Server started\n");
+    printf("Listen on 127.0.0.1: 8000\n");
     for (;;) /* Run forever */
     {
         /* Set the size of the in-out parameter */

@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <stdbool.h> /* for boolean type */
 
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer and the sending message */
+#define MAX_MESSAGE 10 /* The maximum number of message in total that can be left for one user */
+
 #define OPTIONSIZE 1 /* Size of option buffer */
 
 #define MAX_USER 2 /* Maintains a parts database (array version)*/
@@ -14,10 +16,11 @@
 struct user{
     char name[NAME_LEN + 1];
     char password[PASSWORD_LEN + 1];
-    char message[RCVBUFSIZE + 1];
+    char message[MAX_MESSAGE][RCVBUFSIZE + 1];
+    int number_of_messages;
 } usrlist[MAX_USER] = {
-    {"Alice", "12345"},
-    {"Bob", "56789"}
+    {.name = "Alice", .password = "12345", .number_of_messages = 0},
+    {.name = "Bob", .password = "56789", .number_of_messages = 0}
 };
 int currentUserId;
 
@@ -46,8 +49,6 @@ void HandleTCPClient(int clntSocket){
             case 2: recordUserMessage(clntSocket);break;
             case 3: returnMessage(clntSocket);break;
             case 4: disconnect(clntSocket); connected = false; break;
-            case 5: disconnect(clntSocket); connected = false; break;
-            default: break;
         }
     }
 }
@@ -55,8 +56,18 @@ void HandleTCPClient(int clntSocket){
 void returnMessage(int clntSocket){
     char message[RCVBUFSIZE];
     char sendBuffer[RCVBUFSIZE];
-    strcpy(message, usrlist[currentUserId].message);
-    /* Send user message */
+    char number_of_messages[3]; 
+    int i ;
+    /* Get the number of messages */
+    sprintf(number_of_messages,"%d", usrlist[currentUserId].number_of_messages);
+    strcpy(message, "you have ");
+    strcat(message, number_of_messages);
+    strcat(message, " message(s)\n");
+    /* Concatnate all messages, but the max number of messages is 10*/
+    for(i = 0; i < usrlist[currentUserId].number_of_messages && i < MAX_MESSAGE; i++){
+        strcat(message, usrlist[currentUserId].message[i]);
+    }
+    /* Send back the user's messages together */
     if(send(clntSocket, message, strlen(message), 0) != strlen(message))
         DieWithError("send() failed");
     printf("Send back %s's message!\n", usrlist[currentUserId].name);
@@ -105,8 +116,12 @@ void recordUserMessage(int clntSocket){
     if((recvMsgSize = recv(clntSocket, message, RCVBUFSIZE, 0)) < 0)
         DieWithError("recv() failed") ;
     message[recvMsgSize] = '\0'; /* Terminate the string! */
-/* Store the message to the database */
-    strcpy(usrlist[i].message, message);
+/* Store the message to the database,
+ * The max number of messages for one user is 10.
+ * The 11th message will be message 0, the 12th message will be message 1, and so on*/
+    strcpy(usrlist[i].message[usrlist[i].number_of_messages % 10], message);
+    usrlist[i].number_of_messages++;
+
     /*printf("successfully store the message %s", usrlist[i].message);*/
 
 /* Send user message three*/
@@ -114,7 +129,7 @@ void recordUserMessage(int clntSocket){
         DieWithError("send() failed");
     /*printf("successfully sent message three\n");*/
     printf("A message to %s \n", usrlist[i].name);
-    printf("%s", usrlist[i].message);
+    printf("%s", usrlist[i].message[ (usrlist[i].number_of_messages - 1) % 10 ]);
 }
 
 void returnUserList(int clntSocket){

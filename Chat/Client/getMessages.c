@@ -3,7 +3,7 @@
 #include <string.h> 
 
 #define OPTIONSIZE 1 /* Size of option buffer*/
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer */
 void DieWithError(char *errorMessage); /* Error handling function */
 
 void getMyMessages(int sock){

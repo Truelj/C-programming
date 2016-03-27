@@ -2,8 +2,9 @@
 #include <stdio.h> /* for printf() and fprintf() */
 #include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
 #include <string.h>
+#include <unistd.h> /* for close() */
 
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer */
 #define USERNAME_LENGTH 20
 void DieWithError(char *errorMessage); /* Error handling function */
 
@@ -38,5 +39,6 @@ void chat(int sock, char *friend_name, char *user){
 
 	}	
 	printf("disconnected from my friend\n");
+	close(sock);
 
 }

@@ -4,7 +4,7 @@
 
 
 #define OPTIONSIZE 1 /* Size of option buffer*/
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer */
 #define USERNAME_LENGTH 20 /* size of receiver's user name */
 void DieWithError(char *errorMessage); /* Error handling function */
 
@@ -27,7 +27,8 @@ void sendMessage(int sock){
 
 /* Send the username of receiver to server */
     scanf("%s", userName);
-    fgetc(stdin); /* Capture '/n' */
+    fgetc(stdin); /* get rid of '\n' */
+
     if (send(sock, userName, strlen(userName), 0) != strlen(userName))
         DieWithError("send() sent a different number of bytes than expected");
 

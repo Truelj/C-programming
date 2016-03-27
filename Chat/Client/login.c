@@ -5,7 +5,7 @@
 #include <string.h> /* for memset() */
 #include <unistd.h> /* for close() */
 
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer */
 #define OPTIONSIZE 1 /* Size of option buffer*/
 
 #define USERNAME_LENGTH 20
@@ -48,7 +48,7 @@ void login(int sock, char *user){
         if((bytesRcvd = recv(sock, receivedBuffer, RCVBUFSIZE, 0)) <= 0)
             DieWithError("recv() failed or connection closed prematurely");
         receivedBuffer[bytesRcvd] = '\0'; /* Terminate the string! */
-        printf("receive %s" ,receivedBuffer); /* Print the buffer */
+        printf("%s" ,receivedBuffer); /* Print the buffer */
 
     }
 /* Send the password to the server */

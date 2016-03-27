@@ -6,10 +6,10 @@
 #include <arpa/inet.h> /* for sockaddr_in and inet_ntoa() */
 #include <unistd.h> /* for close() */
 
-#define RCVBUFSIZE 50 /* Size of receive buffer */
+#define RCVBUFSIZE 5000 /* Size of receive buffer */
 #define IP_LENGTH 15 /* Maximum length of IP address */
 #define MAXPENDING 5 /* Maximum outstanding connection requests */
-#define OPTIONSIZE 1 
+#define OPTIONSIZE 1 /* Size of option number that sent to the client */
 #define USERNAME_LENGTH 20 /* Maximum length of user's name */
 
 void connectToServer();
@@ -44,6 +44,7 @@ int main(int argc, char const *argv[])
 		printf("5. Chat with my friend\n");
 		printf("Your option <enter a number>:");
 		scanf("%d", &option);
+		fgetc(stdin); /* git rid of '\n' */
 		/* According to the option the user entered, perform the corresponding task*/
 		switch(option){
 			case 0: connectToServer(); login(sock, user);break;
@@ -52,7 +53,7 @@ int main(int argc, char const *argv[])
 			case 3: getMyMessages(sock); break;
 			case 4: initiateChat(); break;
 			case 5: connectToFriend(); break;
-			default: break;
+			default: disconnectServer(); break; /* If the user does not enter a correct command, the user will disconnect with server */
 
 		}
 
@@ -61,20 +62,9 @@ int main(int argc, char const *argv[])
 }
 
 void connectToFriend(){
-	char optionBuffer[OPTIONSIZE]; 
     int bytesRcvd;
-    char receivedBuffer[RCVBUFSIZE + 1];
     char friend_name[USERNAME_LENGTH];
-/*send the command option to the server*/
-    optionBuffer[0] = '5';
-    if (send(sock, optionBuffer, OPTIONSIZE, 0) != OPTIONSIZE)
-        DieWithError("send() sent a different number of bytes than expected");
-/* Receive up to the buffer size bytes from the sender */
-    if ((bytesRcvd = recv(sock, receivedBuffer, RCVBUFSIZE, 0)) <= 0)
-        DieWithError("recv() failed or connection closed prematurely");
-    receivedBuffer[bytesRcvd] = '\0'; /* Terminate the string! */
-    printf("%s" ,receivedBuffer); /* Print the buffer */
-/* Disconnect with server */
+
 	disconnectServer();
 
 /* Prompt the user to enter the IP address and port number of the friend */
@@ -146,22 +136,10 @@ void initiateChat(){
     unsigned short servPort; /* Server port */
     unsigned int clntLen; /* Length of client address data structure */
     int clnt_number = 0;/* client number for each connected client*/
-	char receivedBuffer[RCVBUFSIZE + 1]; 
-	char friend_name[USERNAME_LENGTH];
 
-    char optionBuffer[OPTIONSIZE]; 
+	char friend_name[USERNAME_LENGTH];
     int bytesRcvd;
-/*send the command option to the server*/
-    optionBuffer[0] = '4';
-    if (send(sock, optionBuffer, OPTIONSIZE, 0) != OPTIONSIZE)
-        DieWithError("send() sent a different number of bytes than expected");
-/*receive message from server*/
-/* Receive up to the buffer size bytes from the sender */
-    if ((bytesRcvd = recv(sock, receivedBuffer, RCVBUFSIZE, 0)) <= 0)
-        DieWithError("recv() failed or connection closed prematurely");
-    receivedBuffer[bytesRcvd] = '\0'; /* Terminate the string! */
-    printf("%s" ,receivedBuffer); /* Print the buffer */
-    memset(receivedBuffer,0, sizeof receivedBuffer);
+
 /* Disconnect with server */
 	disconnectServer();
 	printf("please enter the port number you want to listen on : ");
@@ -207,6 +185,19 @@ void initiateChat(){
 
 }
 void disconnectServer(){
+	char optionBuffer[OPTIONSIZE]; 
+    int bytesRcvd;
+    char receivedBuffer[RCVBUFSIZE + 1];
+/*send the command option to the server*/
+    optionBuffer[0] = '4';
+    if (send(sock, optionBuffer, OPTIONSIZE, 0) != OPTIONSIZE)
+        DieWithError("send() sent a different number of bytes than expected");
+/* Receive up to the buffer size bytes from the sender */
+    if ((bytesRcvd = recv(sock, receivedBuffer, RCVBUFSIZE, 0)) <= 0)
+        DieWithError("recv() failed or connection closed prematurely");
+    receivedBuffer[bytesRcvd] = '\0'; /* Terminate the string! */
+    printf("%s" ,receivedBuffer); /* Print the buffer */
+
 	close(sock);
 }
 
