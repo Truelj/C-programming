@@ -16,6 +16,8 @@ link reverse_2(link);
 link create_1(int);
 link create_2(int);
 void display(link);
+void reverse(link);
+void sort(link);
 int main(int argc, char* argv[]){
 	//get the number of ndoes to create 
 	int number = atoi(argv[1]);
@@ -23,8 +25,18 @@ int main(int argc, char* argv[]){
 	link a =create_2(number);
 	//display the list
 	display(a);
-	a = reverse_2(a);
-	display(a);
+
+	//create a dumb node 
+	link dumb = malloc(sizeof(link));
+	dumb->next = a;
+
+	//reverse the list
+	reverse(dumb);
+	display(dumb->next); //display the list
+
+	//sort the list
+	sort(dumb);
+	display(dumb->next); //display the list
 
 }
 //create a linked list with null tail
@@ -71,9 +83,10 @@ void display(link a){
 	//travese the list
 	while(a != NULL){
 		//print the value of each node
-		printf("%d\n",a->item);
+		printf("%d ",a->item);
 		a=a->next;
 	}
+	printf("\n");
 }
 //method 1
 link reverse_1(link a){
@@ -100,6 +113,38 @@ link reverse_2(link a){
 		b=t;
 	}
 	return r;
+}
+//method 3
+//a is a dumb node. a->next is the first node of the list
+void reverse(link a){
+	a->next = reverse_2(a->next);
+}
+
+//a is a dumb node. a->next is the first node of the list
+void sort(link a){
+	link first = a->next;
+	link next;
+	//create another linked list to store the sorted node
+	link b = malloc(sizeof(link));
+	b->next = NULL;
+	link i;
+	while(first != NULL){
+		next = first;
+		first = first->next;
+		//add node "next" to the new list
+		
+		for(i = b; i->next != NULL; i = i->next){
+			//compare the node after i with node "next"
+			if(i->next->item > next->item){
+
+				break;
+			}
+		}
+		//add node "next" after node i
+		next->next = i->next;
+		i->next = next;	
+	}
+	a->next = b->next;
 }
 
 

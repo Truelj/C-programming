@@ -1,6 +1,7 @@
 /* Author: Jie Li*/
 /* Date: Aug 18, 2016*/
 /* The goal of this program is to set a[i] to 1 if i is prime, and to 0 if i is not prime */
+/* Print all primes numbers that are less than 1000 at the end of the program */
 #include <stdio.h>
 
 #define N 10000
